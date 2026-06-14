@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Profile</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<h2>🚑 Emergency Details</h2>
+
+<div id="data">Loading...</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+import {
+  getFirestore,
+  doc,
+  getDoc
+} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB7E7Rn46k1nC6MFcMJZ6aLWxZMQXZD-bc",
+  authDomain: "emergency-qr-950e5.firebaseapp.com",
+  projectId: "emergency-qr-950e5",
+  storageBucket: "emergency-qr-950e5.firebasestorage.app",
+  messagingSenderId: "670165302728",
+  appId: "1:670165302728:web:b5ceb69c82ea8c0f9d94fd"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const params = new URLSearchParams(window.location.search);
+const id = params.get("id");
+
+async function loadProfile() {
+
+  if (!id) {
+    document.getElementById("data").innerHTML = "❌ No ID found in URL";
+    return;
+  }
+
+  try {
+
+    const docRef = doc(db, "users", id);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+
+      const user = docSnap.data();
+
+      document.getElementById("data").innerHTML = `
+        <h3>🚨 Emergency Information</h3>
+
+        <p><b>👤 Name:</b> ${user.name || "-"}</p>
+
+        <p><b>📞 Emergency Contact 1:</b> ${user.contact1 || "-"}</p>
+
+        <p><b>📞 Emergency Contact 2:</b> ${user.contact2 || "-"}</p>
+
+        <br>
+
+        <a class="call-btn" href="tel:${user.contact1 || ''}">
+          📞 Call Contact 1
+        </a>
+
+        <br><br>
+
+        <a class="call-btn" href="tel:${user.contact2 || ''}">
+          📞 Call Contact 2
+        </a>
+      `;
+
+    } else {
+      document.getElementById("data").innerHTML = "❌ No Data Found";
+    }
+
+  } catch (error) {
+    console.log(error);
+    document.getElementById("data").innerHTML = "❌ Error loading data";
+  }
+}
+
+loadProfile();
+
+</script>
+
+</body>
+</html>
