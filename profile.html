@@ -1,8 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Profile</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profile</title>
+<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
@@ -12,6 +14,7 @@
 <div id="data">Loading...</div>
 
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
 import {
   getFirestore,
@@ -34,10 +37,53 @@ const db = getFirestore(app);
 const params = new URLSearchParams(window.location.search);
 const id = params.get("id");
 
+window.sendLocation = function(phone) {
+
+  const status = document.getElementById("status");
+
+  if (!navigator.geolocation) {
+    status.innerText = "Geolocation not supported";
+    return;
+  }
+
+  status.innerText = "Getting location...";
+
+  navigator.geolocation.getCurrentPosition(
+
+    position => {
+
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+
+      const locationLink =
+      `https://www.google.com/maps?q=${lat},${lon}`;
+
+      const message =
+      `🚨 Emergency Alert!
+
+My Current Location:
+${locationLink}`;
+
+      const whatsappURL =
+      `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+
+      window.open(whatsappURL, "_blank");
+
+      status.innerText = "Location Shared Successfully ✅";
+    },
+
+    error => {
+      status.innerText = "Location Permission Denied ❌";
+    }
+
+  );
+};
+
 async function loadProfile() {
 
   if (!id) {
-    document.getElementById("data").innerHTML = "❌ No ID found in URL";
+    document.getElementById("data").innerHTML =
+    "❌ No ID found in URL";
     return;
   }
 
@@ -67,19 +113,45 @@ async function loadProfile() {
 
         <br><br>
 
+        <button class="call-btn"
+        onclick="sendLocation('${user.contact1 || ''}')">
+          📍 Share Location To Contact 1
+        </button>
+
+        <br><br>
+
         <a class="call-btn" href="tel:${user.contact2 || ''}">
           📞 Call Contact 2
         </a>
+
+        <br><br>
+
+        <button class="call-btn"
+        onclick="sendLocation('${user.contact2 || ''}')">
+          📍 Share Location To Contact 2
+        </button>
+
+        <br><br>
+
+        <p id="status"></p>
       `;
 
     } else {
-      document.getElementById("data").innerHTML = "❌ No Data Found";
+
+      document.getElementById("data").innerHTML =
+      "❌ No Data Found";
+
     }
 
   } catch (error) {
+
     console.log(error);
-    document.getElementById("data").innerHTML = "❌ Error loading data";
+
+    document.getElementById("data").innerHTML =
+    "❌ Error loading data";
+
   }
+
 }
 
 loadProfile();
